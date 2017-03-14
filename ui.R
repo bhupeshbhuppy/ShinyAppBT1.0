@@ -9,38 +9,92 @@
 
 library(shiny)
 library(RODBC)
+library(shinyjs)
 
+##mandatory fields
+mandatory_fields<-c("date_range","RSSDID","criteria","dynamic")
+labelMandatory <- function(label) {
+  tagList(
+    label,
+    span("*", class = "mandatory_star")
+  )
+}
+appCSS <- ".mandatory_star { color: red; }"
+
+
+##UI starts here
 shinyUI(fluidPage(
-  
+  shinyjs::useShinyjs(),
+  shinyjs::inlineCSS(appCSS),
   titlePanel("Benchmark Tool"),
   sidebarLayout(
     sidebarPanel(
-      dateRangeInput("date_range", "Date range:", start = "2001-01-01",
-                     end   = "2017-01-01"),
+      
+      ######################## Form 1 First form ########################
+      
+      div(
+        id = "form",
+      dateRangeInput("date_range", 
+                     labelMandatory("Date range:"), start = "2001-01-01",
+                     end   = "2017-01-01" ),
       htmlOutput("selectUI"),
-      textInput("RSSDID","RSSD ID:"),
-      radioButtons("criteria", "Criteria of Selection of Bank",
+      textInput("RSSDID",labelMandatory("RSSD ID:")),
+      radioButtons("criteria", 
+                   labelMandatory("Criteria of Selection of Bank"),
                          c("Rank" = "rank", "Range" = "range", 
                            "Asset Size" = "size"), inline = TRUE),
     
         conditionalPanel(
         condition = "input.criteria == 'rank'",
-        textInput("rankRange", "Rank")
+        textInput("rankRange", labelMandatory("Rank"))
     ),
     conditionalPanel(
       condition = "input.criteria == 'range'",
-      textInput("perRange", "Range(%)")
+      textInput("perRange", labelMandatory("Range(%)"))
     ),
     conditionalPanel(
       condition = "input.criteria == 'size'",
-      textInput("assetSizeMin", "Minimum Asset Size (in Bl.)"),
-      textInput("assetSizeMax", "Maximum Asset Size (in Bl.)")
-    )
+      textInput("assetSizeMin", 
+                labelMandatory("Minimum Asset Size (in Bl.)")),
+      textInput("assetSizeMax", 
+                labelMandatory("Maximum Asset Size (in Bl.)"))
     ),
+    
+    actionButton("submit", "Submit", class = "btn-primary")
+        ),
+    
+    ######################## Form 2 (second form) ################
+    
+    shinyjs::hidden(
+      div(id="modeoneInput",
+          radioButtons("seasonal", 
+                       labelMandatory("Input data for Modelling"),
+                       c("Deseasonalized" = "deseasonalized", 
+                        "Standardized" = "standardized", inline = TRUE) 
+        ),
+        radioButtons("stationarity", labelMandatory("Stationarity"),
+                     c("ADF" = "adf", "KPSS" = "kpss", "PP"="pp"
+                       , inline = TRUE) 
+        ),
+        radioButtons("correlation", labelMandatory("Correlation"),
+                     c("Pearson" = "pearson", "Kendall" = "kendall",
+                       "Spearman"="spearman", inline = TRUE) 
+        ),
+        actionButton("submit", "Submit", class = "btn-primary")
+        )
+      )
+    ),
+    
     mainPanel(
-      dataTableOutput("view")
-      
-    ) 
-    )
+        div(id = "onloaddata", 
+            dataTableOutput("view")
+            ),
+        shinyjs::hidden(
+          div(id = "queryOutput", 
+              textOutput("data")
+          )
+        )
+        )
+  )
   )
 )
