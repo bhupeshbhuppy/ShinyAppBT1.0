@@ -8,9 +8,10 @@
 # Dev: Bhupesh Joshi Date:06/03/2017  
 
 library(shiny)
-library(RODBC)
+#library(RODBC)
 library(shinyjs)
-
+library(plotly)
+library(shinythemes)
 ##mandatory fields
 mandatory_fields<-c("date_range","RSSDID","criteria","dynamic")
 labelMandatory <- function(label) {
@@ -24,13 +25,15 @@ appCSS <- ".mandatory_star { color: red; }"
 
 ##UI starts here
 shinyUI(fluidPage(
+  theme = shinytheme("paper"),
   shinyjs::useShinyjs(),
   shinyjs::inlineCSS(appCSS),
+  
   titlePanel("Benchmark Tool"),
   sidebarLayout(
     sidebarPanel(
       
-      ######################## Form 1 First form ########################
+############################## Form 1 First form ########################
       
       div(
         id = "form",
@@ -60,41 +63,62 @@ shinyUI(fluidPage(
                 labelMandatory("Maximum Asset Size (in Bl.)"))
     ),
     
-    actionButton("submit", "Submit", class = "btn-primary")
+    actionButton("submit_form1", "Submit", class = "btn-primary")
         ),
     
-    ######################## Form 2 (second form) ################
+########################## Form 2 (second form) ######################
     
     shinyjs::hidden(
       div(id="modeoneInput",
           radioButtons("seasonal", 
                        labelMandatory("Input data for Modelling"),
                        c("Deseasonalized" = "deseasonalized", 
-                        "Standardized" = "standardized", inline = TRUE) 
-        ),
+                        "Standardized" = "standardized"), inline = TRUE) 
+        ,
         radioButtons("stationarity", labelMandatory("Stationarity"),
-                     c("ADF" = "adf", "KPSS" = "kpss", "PP"="pp"
+                     c("ADF" = "adf", "KPSS" = "kpss", "PP"="pp")
                        , inline = TRUE) 
-        ),
+        ,
         radioButtons("correlation", labelMandatory("Correlation"),
                      c("Pearson" = "pearson", "Kendall" = "kendall",
-                       "Spearman"="spearman", inline = TRUE) 
-        ),
-        actionButton("submit", "Submit", class = "btn-primary")
+                       "Spearman"="spearman"), inline = FALSE) 
+        ,
+        sliderInput("corrVar", "Number of variables from correlation output"
+                    , min = 0,max = 100,value = 20),
+        # sliderInput("noModels", "Number of Models required",
+        #             min = 0,max = 100,value = 20),
+        # sliderInput("noVar", "Number of variables in final models", 
+        #             min = 0,max = 100,value = 20),
+        # sliderInput("noVarARIMA", "Number of variables for ARIMA",
+        #             min = 0,max = 100,value = 20),
+        downloadButton("download", label = "Download Report")
         )
       )
     ),
     
     mainPanel(
         div(id = "onloaddata", 
-            dataTableOutput("view")
+            tabsetPanel(
+              tabPanel("Table View", dataTableOutput("view")),
+              tabPanel("Scatter Plot", plotlyOutput("plotlyView"))
+            )
+             
+            #textOutput()
+            
             ),
         shinyjs::hidden(
           div(id = "queryOutput", 
               textOutput("data")
+              #tabPanel("Table View", dataTableOutput("view"))
+          )
+        ),
+        shinyjs::hidden(
+          div(id = "model", 
+              textOutput("model")
           )
         )
         )
   )
+#shinythemes::themeSelector()
   )
 )
