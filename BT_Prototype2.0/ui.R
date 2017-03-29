@@ -12,6 +12,7 @@ library(shiny)
 library(shinyjs)
 library(plotly)
 library(shinythemes)
+library(shinyBS)
 ##mandatory fields
 mandatory_fields<-c("date_range","RSSDID","criteria","dynamic")
 labelMandatory <- function(label) {
@@ -32,89 +33,100 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       
-############################## Form 1 First form ########################
+      ############################## Form 1 First form ####################
       
       div(
         id = "form",
-      dateRangeInput("date_range", 
-                     labelMandatory("Date range:"), start = "2001-01-01",
-                     end   = "2017-01-01" ),
-      htmlOutput("selectUI"),
-      textInput("RSSDID",labelMandatory("RSSD ID:")),
-      radioButtons("criteria", 
-                   labelMandatory("Criteria of Selection of Bank"),
-                         c("Rank" = "rank", "Range" = "range", 
-                           "Asset Size" = "size"), inline = TRUE),
-    
+        dateRangeInput("date_range", 
+                       labelMandatory("Date range:"), start = "2001-01-01",
+                       end   = "2017-01-01" ),
+        htmlOutput("selectUI"),
+        textInput("RSSDID",labelMandatory("RSSD ID:")),
+        radioButtons("criteria", 
+                     labelMandatory("Criteria of Selection of Bank"),
+                     c("Rank" = "rank", "Range" = "range", 
+                       "Asset Size" = "size"), inline = TRUE),
+        
         conditionalPanel(
-        condition = "input.criteria == 'rank'",
-        textInput("rankRange", labelMandatory("Rank"))
-    ),
-    conditionalPanel(
-      condition = "input.criteria == 'range'",
-      textInput("perRange", labelMandatory("Range(%)"))
-    ),
-    conditionalPanel(
-      condition = "input.criteria == 'size'",
-      textInput("assetSizeMin", 
-                labelMandatory("Minimum Asset Size (in Bl.)")),
-      textInput("assetSizeMax", 
-                labelMandatory("Maximum Asset Size (in Bl.)"))
-    ),
-    
-    actionButton("submit_form1", "Submit", class = "btn-primary")
+          condition = "input.criteria == 'rank'",
+          textInput("rankRange", labelMandatory("Rank"))
         ),
-    
-########################## Form 2 (second form) ######################
-    
-    shinyjs::hidden(
-      div(id="modeoneInput",
-          radioButtons("seasonal", 
-                       labelMandatory("Input data for Modelling"),
-                       c("Deseasonalized" = "deseasonalized", 
-                        "Standardized" = "standardized"), inline = TRUE) 
-        ,
-        radioButtons("stationarity", labelMandatory("Stationarity"),
-                     c("ADF" = "adf", "KPSS" = "kpss", "PP"="pp")
-                       , inline = TRUE) 
-        ,
-        radioButtons("correlation", labelMandatory("Correlation"),
-                     c("Pearson" = "pearson", "Kendall" = "kendall",
-                       "Spearman"="spearman"), inline = FALSE) 
-        ,
-        sliderInput("corrVar", "Number of variables from correlation output"
-                    , min = 0,max = 100,value = 20),
-        # sliderInput("noModels", "Number of Models required",
-        #             min = 0,max = 100,value = 20),
-        # sliderInput("noVar", "Number of variables in final models", 
-        #             min = 0,max = 100,value = 20),
-        # sliderInput("noVarARIMA", "Number of variables for ARIMA",
-        #             min = 0,max = 100,value = 20),
-        downloadButton("download", label = "Download Report")
+        conditionalPanel(
+          condition = "input.criteria == 'range'",
+          textInput("perRange", labelMandatory("Range(%)"))
+        ),
+        conditionalPanel(
+          condition = "input.criteria == 'size'",
+          textInput("assetSizeMin", 
+                    labelMandatory("Minimum Asset Size (in Bl.)")),
+          textInput("assetSizeMax", 
+                    labelMandatory("Maximum Asset Size (in Bl.)"))
+        ),
+        
+        actionButton("submit_form1", "Submit", class = "btn-primary")
+      ),
+      
+      ########################## Form 2 (second form) ####################
+      
+      shinyjs::hidden(
+        div(id="modeoneInput",
+            radioButtons("seasonal", 
+                         labelMandatory("Input data for Modelling"),
+                         c("Deseasonalized" = "deseasonalized", 
+                           "Standardized" = "standardized"), inline = TRUE) 
+            ,
+            radioButtons("stationarity", labelMandatory("Stationarity"),
+                         c("ADF" = "adf", "KPSS" = "kpss", "PP"="pp")
+                         , inline = TRUE) 
+            ,
+            radioButtons("correlation", labelMandatory("Correlation"),
+                         c("Pearson" = "pearson", "Kendall" = "kendall",
+                           "Spearman"="spearman"), inline = FALSE) 
+            ,
+            sliderInput("corrVar", "Number of variables from correlation
+                        output", min = 0,max = 100,value = 20),
+            # sliderInput("noModels", "Number of Models required",
+            #             min = 0,max = 100,value = 20),
+            # sliderInput("noVar", "Number of variables in final models", 
+            #             min = 0,max = 100,value = 20),
+            # sliderInput("noVarARIMA", "Number of variables for ARIMA",
+            #             min = 0,max = 100,value = 20),
+            downloadButton("download", label = "Download Report")
         )
       )
     ),
     
     mainPanel(
-        div(id = "onloaddata", 
-            tabsetPanel(
-              tabPanel("Table View", dataTableOutput("view")),
-              tabPanel("Scatter Plot", plotlyOutput("plotlyView"))
-			)
-		),
-        shinyjs::hidden(
-          div(id = "queryOutput", 
-              textOutput("data")
-              #tabPanel("Table View", dataTableOutput("view"))
+      div(id = "onloaddata", 
+          tabsetPanel(
+            tabPanel("Table View", dataTableOutput("view")),
+            tabPanel("Scatter Plot", plotlyOutput("plotlyView"))
           )
-        ),
-        shinyjs::hidden(
-          div(id = "model", 
-              textOutput("model")
-          )
+      ),
+      shinyjs::hidden(
+        div(id = "queryOutput",
+            textOutput("heading1"),
+            textOutput("heading2"),
+            uiOutput("bsButtonUI"),
+           # uiOutput("bsTooltipUI"),
+#             bsButton("graphType1", "a", 
+#                      type= "toggle", style= "warning"),
+#             bsButton("graphType2", "b", 
+#                      type= "toggle", style= "success"),
+#             bsTooltip("graphType2", "Real disposable income growth"
+#                       ,trigger = "hover"),
+#             bsTooltip("graphType1", "Real GDP growth", trigger = "hover"),
+            dygraphOutput("dyplot")
+            #tabPanel("Table View", dataTableOutput("view"))
         )
+      ),
+      shinyjs::hidden(
+        div(id = "model", 
+            textOutput("model")
         )
+      )
+    )
   )
-#shinythemes::themeSelector()
-  )
+  #shinythemes::themeSelector()
+)
 )
