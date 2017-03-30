@@ -108,14 +108,7 @@ shinyUI(fluidPage(
             textOutput("heading1"),
             textOutput("heading2"),
             uiOutput("bsButtonUI"),
-           # uiOutput("bsTooltipUI"),
-#             bsButton("graphType1", "a", 
-#                      type= "toggle", style= "warning"),
-#             bsButton("graphType2", "b", 
-#                      type= "toggle", style= "success"),
-#             bsTooltip("graphType2", "Real disposable income growth"
-#                       ,trigger = "hover"),
-#             bsTooltip("graphType1", "Real GDP growth", trigger = "hover"),
+            uiOutput("bsTooltipUI"),
             dygraphOutput("dyplot")
             #tabPanel("Table View", dataTableOutput("view"))
         )

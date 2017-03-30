@@ -8,9 +8,6 @@
 #
 
 library(shiny)
-#library(devtools)
-#library(DT)
-## COnnecting DB
 library(plotly)
 library(zoo)
 library(shinyBS)
@@ -38,6 +35,10 @@ indicators<-read.csv(file = "Book4.csv", header = TRUE)
 time<-ts(as.yearqtr(indicators$Time, format = "Q%q %Y" ))
 heading = "Select button to view graph"
 indicator_names<-colnames(indicators)
+style_sample<- c("default", "primary", "success", 
+                 "info", "warning","danger")
+
+
 ##Defining mandatory fields
 shinyjs::useShinyjs()
 fieldsMandatory<-c("RSSDID","criteria","dynamic")
@@ -50,8 +51,7 @@ labelMandatory <- function(label) {
 }
 appCSS <- ".mandatory_star { color: red; }"
 
-
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   ##output table for the main panel on page load
   output$view <- renderDataTable(
     onload_data, options = list(pageLength = 10, autoWidth = TRUE,
@@ -87,10 +87,6 @@ shinyServer(function(input, output) {
            hovermode= 'closest'
     )
   })
-  
-  
-  
-  
   ##for submit button
   observe({
     # check if all mandatory fields have a value
@@ -107,88 +103,62 @@ shinyServer(function(input, output) {
                            mandatoryFilled)
     
     
-    ##########next page #### Graphs
+    ########## next page Macro Indicators Graphs ####
     output$heading<-renderText("Trends in various Various
                                    MacroEconomic Indicators")
     
-    #op_df$Real_GDP_Growth<-indicators$Real.GDP.growth
     output$bsButtonUI <- renderUI({
       lapply(2:length(indicator_names), function(i) {
-        bsButton(indicator_names[i], "", type= "toggle")
+        bsButton(indicator_names[i], "",
+                 type= "toggle", style = sample(style_sample,1))
       })
     })
-    #     output$heading1<-renderText(input[[indicator_names[2]]] )
-    #         if(input[[indicator_names[2]]] == TRUE){
-    #           op_df[[indicator_names[2]]]<-indicators[[indicator_names[2]]]
-    #         }
-    
     observeEvent(input[[indicator_names[2]]],{
-      op_df<-data.frame(time=ts(as.yearqtr(indicators$Time,format = "Q%q %Y")))
-      lapply(2:length(indicator_names), function(i) {
-        if(!is.null(input[[indicator_names[i]]]== TRUE)){
+      op_df<-data.frame(time=ts(as.yearqtr(indicators$Time,format 
+                                           = "Q%q %Y")))
+      #op_df[[indicator_names[2]]]<-indicators[[indicator_names[2]]]
+      for(i in 2:length(indicator_names)){
+        if(!is.null(input[[indicator_names[i]]]) 
+           && input[[indicator_names[i]]] == TRUE){
           op_df[[indicator_names[i]]]<-indicators[[indicator_names[i]]]
         }
-        })
-        output$dyplot<-renderDygraph(dygraph(op_df,
-                                             xlab = "Year", 
-                                             ylab = "Growth Rate"))
-      })
-      
-      
-      
-            lapply(2:length(indicator_names), function(i) {
-            if(input[[indicator_names[i]]] == TRUE){
-              #op_df[[indicator_names[i]]]<-indicators[[indicator_names[i]]]
-              input[[indicator_names[i]]]
-            }})
-      
-      
-      #     output$bsTooltipUI <- renderUI({
-      #       lapply(2:length(indicator_names), function(i) {
-      #         bsTooltip(indicator_names[i],"xyz",trigger = "hover")
-      #       })
-      #     })
-      
-      #     if(input$graphType1 == TRUE){
-      #       op_df$Real_GDP_Growth<-indicators$Real.GDP.growth
-      #     }
-      #     if(input$graphType2 == TRUE){
-      #       op_df$Disposable.income<-indicators$Real.disposable.income.growth
-      #     } 
-      
-      
-      observeEvent(input$submit_form1,{
-        queryParm<-list(input$date_range,input$dynamic, 
-                        input$RSSDID, input$criteria, input$rankRange, 
-                        input$perRange, input$assetSizeMin, 
-                        input$assetSizeMax)     
-        output$data<-renderText(getData(queryParm))
-        shinyjs::reset("form")
-        shinyjs::hide("form")
-        shinyjs::hide("onloaddata")
-        shinyjs::show("modeoneInput")
-        shinyjs::show("queryOutput")
-      })
+      }
+      output$dyplot<-renderDygraph(dygraph(op_df,
+                                           xlab = "Year", 
+                                           ylab = "Growth Rate"))
+    })    
+    
+    observeEvent(input$submit_form1,{
+      queryParm<-list(input$date_range,input$dynamic, 
+                      input$RSSDID, input$criteria, input$rankRange, 
+                      input$perRange, input$assetSizeMin, 
+                      input$assetSizeMax)     
+      output$data<-renderText(getData(queryParm))
+      shinyjs::reset("form")
+      shinyjs::hide("form")
+      shinyjs::hide("onloaddata")
+      shinyjs::show("modeoneInput")
+      shinyjs::show("queryOutput")
     })
-    ######################### first submit button #####################
-    
-    
-    ######################### Second submit button #####################
-    # observeEvent(input$submit_form1,{
-    #   queryParm<-list(input$date_range,input$dynamic, 
-    #input$RSSDID, input$criteria, input$rankRange, input$perRange, 
-    #input$assetSizeMin, input$assetSizeMax)     
-    #   output$model<-renderText("Model and Result")
-    #   shinyjs::reset("form")
-    #   shinyjs::hide("form")
-    #   shinyjs::hide("onloaddata")
-    #   shinyjs::hide("queryOutput")
-    #   shinyjs::hide("modeoneInput")
-    #   #shinyjs::show("modeoneInput")
-    #   shinyjs::show("model")
-    # })
-    
-    
   })
+  ######################### first submit button #####################
   
   
+  ######################### Second submit button #####################
+  # observeEvent(input$submit_form1,{
+  #   queryParm<-list(input$date_range,input$dynamic, 
+  #input$RSSDID, input$criteria, input$rankRange, input$perRange, 
+  #input$assetSizeMin, input$assetSizeMax)     
+  #   output$model<-renderText("Model and Result")
+  #   shinyjs::reset("form")
+  #   shinyjs::hide("form")
+  #   shinyjs::hide("onloaddata")
+  #   shinyjs::hide("queryOutput")
+  #   shinyjs::hide("modeoneInput")
+  #   #shinyjs::show("modeoneInput")
+  #   shinyjs::show("model")
+  # })
+  
+  
+})
+
