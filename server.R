@@ -71,14 +71,14 @@ shinyServer(function(input, output, session) {
     p <- plot_ly(data = onload_data, 
                  type="scatter",
                  mode= 'marker',
-                 color = I(onload_data$Average.Assets..in.Mn..),
+                 color = I(onload_data[,3]),
                  opacity = 0.8,
-                 x = onload_data$Average.Assets..in.Mn..,
-                 y= onload_data$Net.Income..in.Mn..,
-                 text = ~paste("Name: ", onload_data$Name, 
-                               '$<br>RSSD ID:', onload_data$ID.RSSD),
+                 x = onload_data[,3],
+                 y= onload_data[,4],
+                 text = ~paste("Name: ", onload_data[,2], 
+                               '$<br>RSSD ID:', onload_data[,1]),
                  sizemode= 'area',
-                 size= onload_data$Net.Income..in.Mn..)
+                 size= onload_data[,4])
     layout(p,                       
            title = "Income VS Assets for major banks", 
            xaxis = list(title = "Average Assets (in Mn.) ",
@@ -146,14 +146,14 @@ shinyServer(function(input, output, session) {
     #output$heading1<- renderText(input)
   })
   
-
-
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
+  
+  
   
   #output$heading1<- renderText(input)
   #})
